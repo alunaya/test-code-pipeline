@@ -1,0 +1,23 @@
+version: 0.2
+
+run-as: root
+
+env:
+  variables:
+    buildpath: "lambda1"
+
+phases:
+  install:
+    on-failure: ABORT
+
+  build:
+    commands:
+      - cd ${buildpath}
+      - npm install
+
+  artifacts:
+    files:
+      - ${buildpath}/*
+    name: build_${buildpath}.zip
+
+  
