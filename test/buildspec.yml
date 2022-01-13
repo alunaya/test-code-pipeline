@@ -2,9 +2,20 @@ version: 0.2
 
 run-as: root
 
-env:
-  variables:
-    buildpath: "lambda1"
+batch:
+  fast-fail: true
+  build-list:
+    - identifier: lambda1
+      env:
+        variables:
+          buildpath: lambda1
+      ignore-failure: false
+    - identifier: lambda2
+      env:
+        variables:
+          buildpath: lambda2
+      ignore-failure: false
+
 
 phases:
   install:
@@ -14,6 +25,7 @@ phases:
     commands:
       - cd ${buildpath}
       - npm install
+      - echo ${buildpath}
 
   artifacts:
     files:
