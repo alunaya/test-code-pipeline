@@ -16,10 +16,11 @@ batch:
           buildpath: lambda2
       ignore-failure: false
 
-
 phases:
   install:
     on-failure: ABORT
+    runtime-versions:
+      nodejs: latest
 
   build:
     commands:
@@ -27,9 +28,9 @@ phases:
       - npm install
       - echo ${buildpath}
 
-  artifacts:
-    files:
-      - ${buildpath}/*
-    name: build_${buildpath}.zip
+artifacts:
+  files:
+    - ${buildpath}/*
+  name: build_${buildpath}.zip
 
   
