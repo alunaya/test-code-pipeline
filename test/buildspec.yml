@@ -24,9 +24,11 @@ phases:
 
   build:
     commands:
+      - pwd
+      - ls
       - cd ./${buildpath}
       - npm install
-      - echo ${buildpath}
+      - pwd
 
 artifacts:
   files:
