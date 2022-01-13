@@ -26,7 +26,7 @@ phases:
     commands:
       - pwd
       - ls
-      - cd ./${buildpath}
+      - cd ./test/${buildpath}
       - npm install
       - pwd
 
