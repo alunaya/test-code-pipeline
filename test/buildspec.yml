@@ -34,7 +34,6 @@ phases:
 artifacts:
   files:
     - test/${buildpath}/*
-    - test/*
   name: build_${buildpath}.zip
 
   
