@@ -29,6 +29,7 @@ phases:
       - cd ./test/${buildpath}
       - npm install
       - pwd
+      - ls
 
 artifacts:
   files:
