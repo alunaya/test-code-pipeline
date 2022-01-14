@@ -32,7 +32,7 @@ phases:
 
 artifacts:
   files:
-    - ${buildpath}/*
+    - test/${buildpath}/*
   name: build_${buildpath}.zip
 
   
