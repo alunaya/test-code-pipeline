@@ -126,7 +126,6 @@ Resources:
       Name: 'TestCodeBuild'
       Description: 'Code build test for multi lambda microservice'
       Source:
-        BuildSpec: './test/buildspec.yml'
         Type: CODEPIPELINE
       Artifacts:
         EncryptionDisabled: true
