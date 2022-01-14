@@ -24,16 +24,12 @@ phases:
 
   build:
     commands:
-      - pwd
-      - ls
       - cd ./test/${buildpath}
       - npm install
-      - pwd
-      - ls
 
 artifacts:
   files:
-    - test/${buildpath}/*
+    - '**/*'
   name: build_${buildpath}.zip
-
+  base-directory: test/${buildpath}
   
