@@ -3,7 +3,7 @@ version: 0.2
 run-as: root
 
 batch:
-  fast-fail: false
+  fast-fail: true
   build-list:
     - identifier: lambda1
       env:
@@ -19,16 +19,20 @@ batch:
 phases:
   install:
     on-failure: ABORT
+    runtime-versions:
+      nodejs: latest
 
   build:
     commands:
-      - cd ${buildpath}
+      - pwd
+      - ls
+      - cd ./test/${buildpath}
       - npm install
-      - echo "done build"
+      - pwd
 
-  artifacts:
-    files:
-      - ${buildpath}/*
-    name: build_${buildpath}.zip
+artifacts:
+  files:
+    - test/${buildpath}/*
+  name: build_${buildpath}.zip
 
   
