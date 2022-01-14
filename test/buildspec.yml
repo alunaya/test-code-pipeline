@@ -28,8 +28,8 @@ phases:
       - npm install
       - zip -r function_${buildpath}.zip .
       - ls
-      - aws s3 sync function_${buildpath}.zip s3://test-pipeline-v14-outputbucket-uih7oqb3ul3s/${CODEBUILD_RESOLVED_SOURCE_VERSION}/function_${buildpath}.zip
       - jq --version
+      - aws s3 sync ./function_${buildpath}.zip s3://test-pipeline-v14-outputbucket-uih7oqb3ul3s/${CODEBUILD_RESOLVED_SOURCE_VERSION}/function_${buildpath}.zip
 artifacts:
   files:
     - '**/*'
