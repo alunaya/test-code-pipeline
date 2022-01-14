@@ -8,12 +8,14 @@ batch:
     - identifier: lambda1
       env:
         variables:
-          buildpath: lambda1
+          service: test
+          function: lambda1
       ignore-failure: false
     - identifier: lambda2
       env:
         variables:
-          buildpath: lambda2
+          service: test
+          function: lambda2
       ignore-failure: false
 
 phases:
@@ -22,16 +24,20 @@ phases:
     runtime-versions:
       nodejs: latest
 
+  prebuild:
+    commands:
+      - chmod +x ./${service}/cloudformCofigurationBuilder.sh
+
   build:
     commands:
-      - ./test/cloudformCofigurationBuilder.sh
-      - cd ./test/${buildpath}
+      - ./${service}/cloudformCofigurationBuilder.sh
+      - cd ./${service}/${function}
       - npm install
-      - zip -r function_${buildpath}.zip .
-      - aws s3 cp ./function_${buildpath}.zip s3://test-pipeline-v14-outputbucket-uih7oqb3ul3s/${CODEBUILD_RESOLVED_SOURCE_VERSION}/function_${buildpath}.zip
+      - zip -r function_${function}.zip .
+      - aws s3 cp ./function_${function}.zip s3://test-pipeline-v14-outputbucket-uih7oqb3ul3s/${CODEBUILD_RESOLVED_SOURCE_VERSION}/function_${buildpath}.zip
 artifacts:
   files:
     - '**/*'
-  name: build_${buildpath}.zip
-  base-directory: test/${buildpath}
+  name: build_${service}_${function}.zip
+  base-directory: ${service}/${function}
   
