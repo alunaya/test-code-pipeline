@@ -1,27 +1,26 @@
-AWSTemplateFormatVersion: "2010-09-09"
-Description: "Test pipeline template"
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'create code pipline with simple code build stage for pipeline testing of microservice'
 Resources:
-  CodeBuildInputBucket:
-    Type: "AWS::S3::Bucket"
+  SourceBucket:
+    Type: 'AWS::S3::Bucket'
     Properties:
         OwnershipControls:
           Rules:
-            - ObjectOwnership: BucketOwnerEnforced
-        BucketName: codebuild-ap-southeast-1-a18cd90d9fc4e230311fdb760ca233f102eb7932ca0300777f65ec8d17010948-input
+            - ObjectOwnership: BucketOwnerPreferred
         ObjectLockEnabled: false
-  CodeBuildOutputBucket:
-    Type: "AWS::S3::Bucket"
+  OutputBucket:
+    Type: 'AWS::S3::Bucket'
     Properties:
         OwnershipControls:
           Rules:
-            - ObjectOwnership: BucketOwnerEnforced
-        BucketName: codebuild-ap-southeast-1-a18cd90d9fc4e230311fdb760ca233f102eb7932ca0300777f65ec8d17010948-output
+            - ObjectOwnership: BucketOwnerPreferred
         ObjectLockEnabled: false
   CodeBuildServiceRole:
-    Type: "AWS::IAM::Role"
+    Type: 'AWS::IAM::Role'
     Properties:
+      RoleName: CodeBuildTestServiceRole
       AssumeRolePolicyDocument:
-        Version: "2012-10-17"
+        Version: '2012-10-17'
         Statement:
           - Effect: Allow
             Principal:
@@ -33,7 +32,7 @@ Resources:
       Policies:
         - PolicyName: CodeBuildS3ObjectPolicy
           PolicyDocument:
-            Version: "2012-10-17"
+            Version: '2012-10-17'
             Statement:
               - Effect: Allow
                 Action: 
@@ -43,17 +42,17 @@ Resources:
                 Resource: 
                 - !Join
                   - ''
-                  - - 'arn:${Partition}:s3:::'
-                    - !Ref CodeBuildInputBucket
+                  - - 'arn:aws:s3:::'
+                    - !Ref SourceBucket
                     - /*
                 - !Join
                   - ''
-                  - - 'arn:${Partition}:s3:::'
-                    - !Ref CodeBuildOutputBucket
+                  - - 'arn:aws:s3:::'
+                    - !Ref OutputBucket
                     - /*
         - PolicyName: CodeBuildS3BucketPolicy
           PolicyDocument:
-            Version: "2012-10-17"
+            Version: '2012-10-17'
             Statement:
               - Effect: Allow
                 Action: 
@@ -62,10 +61,134 @@ Resources:
                 Resource: 
                 - !Join
                   - ''
-                  - - 'arn:${Partition}:s3:::'
-                    - !Ref CodeBuildInputBucket
+                  - - 'arn:aws:s3:::'
+                    - !Ref SourceBucket
                 - !Join
                   - ''
-                  - - 'arn:${Partition}:s3:::'
-                    - !Ref CodeBuildOutputBucket
-  
+                  - - 'arn:aws:s3:::'
+                    - !Ref OutputBucket
+        - PolicyName: OtherCodeBuildServicePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'logs:FilterLogEvents'
+                  - 'logs:GetLogEvents'
+                  - 'logs:CreateLogStream'
+                  - 'codebuild:*'
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: '*'
+  CodePipelineServiceRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: CodePipelineTestServiceRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - codepipeline.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      Policies:
+        - PolicyName: CodePipelineServicePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: 
+                  - 's3:*'
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - 'codebuild:BatchGetBuilds'
+                  - 'codebuild:StartBuild'
+                  - 'codebuild:BatchGetBuildBatches'
+                  - 'codebuild:StartBuildBatch'
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - 'codestar-connections:UseConnection'
+                Resource: '*'
+  CodeStarForPipelineConnection:
+    Type: AWS::CodeStarConnections::Connection
+    Properties:
+      ConnectionName: TestPipelineConnection
+      ProviderType: GitHub
+  CodeBuildService:
+    Type: 'AWS::CodeBuild::Project'
+    Properties:
+      Name: 'TestCodeBuild'
+      Description: 'Code build test for multi lambda microservice'
+      Source:
+        BuildSpec: './test/buildspec.yml'
+        Type: CODEPIPELINE
+      Artifacts:
+        EncryptionDisabled: true
+        Type: CODEPIPELINE
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:5.0
+        Type: LINUX_CONTAINER
+      ServiceRole:
+        Fn::GetAtt:
+          - CodeBuildServiceRole
+          - Arn
+      Visibility: PRIVATE
+      BuildBatchConfig:
+        CombineArtifacts: false
+        ServiceRole:
+          Fn::GetAtt:
+            - CodeBuildServiceRole
+            - Arn
+  CodePipelineService:
+    Type: AWS::CodePipeline::Pipeline
+    Properties: 
+      Name: TestPipeline
+      ArtifactStore: 
+        Type: S3
+        Location: !Ref SourceBucket
+      RestartExecutionOnUpdate: false
+      RoleArn: !GetAtt CodePipelineServiceRole.Arn
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: Source
+              ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Provider: CodeStarSourceConnection
+                Version: "1"
+              Configuration:
+                ConnectionArn: !GetAtt CodeStarForPipelineConnection.ConnectionArn
+                FullRepositoryId: 'alunaya/test-code-pipeline'
+                BranchName: 'main'
+                OutputArtifactFormat: "CODE_ZIP"
+                DetectChanges: false
+              OutputArtifacts:
+                - Name: TestApp
+              RunOrder: 1
+        - Name: Build
+          Actions:
+            - Name: Build
+              InputArtifacts:
+                - Name: TestApp
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: "1"
+              Configuration:
+                ProjectName: !Ref CodeBuildService
+                BatchEnabled: true
+                CombineArtifacts: false
+              RunOrder: 1
+              OutputArtifacts:
+                - Name: lambda1
+                - Name: lambda2
+                
