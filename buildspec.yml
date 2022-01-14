@@ -27,7 +27,6 @@ phases:
   build:
     commands:
       - "echo '{\"Parameters\": {\"BuildCommit\": \"${CODEBUILD_RESOLVED_SOURCE_VERSION}\"}}' > ./CloudformConfiguration.json"
-      - ./${service}/cloudformCofigurationBuilder.sh
       - cd ./${service}/${function}
       - npm install
       - zip -r function_${function}.zip .
