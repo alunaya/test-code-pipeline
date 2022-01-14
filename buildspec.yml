@@ -24,10 +24,6 @@ phases:
     runtime-versions:
       nodejs: latest
 
-  pre_build:
-    commands:
-      - chmod +x ./${service}/cloudformCofigurationBuilder.sh
-
   build:
     commands:
       - "echo '{\"Parameters\": {\"BuildCommit\": \"${CODEBUILD_RESOLVED_SOURCE_VERSION}\"}}' > ./CloudformConfiguration.json"
