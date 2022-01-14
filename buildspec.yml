@@ -37,7 +37,8 @@ phases:
       - aws s3 cp ./function_${function}.zip s3://test-pipeline-v14-outputbucket-uih7oqb3ul3s/${CODEBUILD_RESOLVED_SOURCE_VERSION}/function_${buildpath}.zip
 artifacts:
   files:
-    - '**/*'
+    - CloudformConfiguration.json
+    - lambda-template.yml
   name: build_${service}_${function}.zip
-  base-directory: ${service}/${function}
+  base-directory: ${service}
   
