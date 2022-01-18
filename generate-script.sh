@@ -1,0 +1,1 @@
+echo '{"Parameters": {"BuildCommit": "'${CODEBUILD_RESOLVED_SOURCE_VERSION}'"}}' | tee ./${service}/CloudformConfiguration.json
