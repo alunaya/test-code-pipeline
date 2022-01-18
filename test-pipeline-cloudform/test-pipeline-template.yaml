@@ -139,6 +139,10 @@ Resources:
           - CodeBuildServiceRole
           - Arn
       Visibility: PRIVATE
+      EnvironmentVariable:
+        Name: OutputBucket
+        Type: PLAINTEXT
+        Value: !Ref OutputBucket
       BuildBatchConfig:
         CombineArtifacts: false
         ServiceRole:
