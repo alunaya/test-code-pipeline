@@ -176,7 +176,7 @@ Resources:
               Configuration:
                 ConnectionArn: !GetAtt CodeStarForPipelineConnection.ConnectionArn
                 FullRepositoryId: 'alunaya/test-code-pipeline'
-                BranchName: 'main'
+                BranchName: 'sam'
                 OutputArtifactFormat: "CODE_ZIP"
                 DetectChanges: false
               OutputArtifacts:
@@ -215,4 +215,3 @@ Resources:
                 ActionMode: CHANGE_SET_REPLACE
                 StackName: test-lambda
                 Capabilities: CAPABILITY_IAM
-                
