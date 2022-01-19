@@ -118,6 +118,70 @@ Resources:
                 Action:
                   - 'codestar-connections:UseConnection'
                 Resource: '*'
+  CloudformDeployServiceRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: CodePipelineTestServiceRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - cloudformation.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      Policies:
+        - PolicyName: CloudformDeployServicePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - cloudformation:*
+                  - codedeploy:CreateApplication
+                  - codedeploy:CreateDeployment
+                  - codedeploy:CreateDeploymentGroup
+                  - codedeploy:DeleteApplication
+                  - codedeploy:DeleteDeploymentGroup
+                  - codedeploy:GetDeployment
+                  - codedeploy:GetDeploymentConfig
+                  - codedeploy:RegisterApplicationRevision
+                  - iam:AttachRolePolicy
+                  - iam:CreateRole
+                  - iam:DeleteRole
+                  - iam:DeleteRolePolicy
+                  - iam:DetachRolePolicy
+                  - iam:GetRole
+                  - iam:GetRolePolicy
+                  - iam:PassRole
+                  - iam:PutRolePolicy
+                  - iam:TagRole
+                  - iam:UntagRole
+                  - lambda:AddPermission
+                  - lambda:CreateAlias
+                  - lambda:CreateFunction
+                  - lambda:DeleteAlias
+                  - lambda:DeleteFunction
+                  - lambda:GetAlias
+                  - lambda:GetFunction
+                  - lambda:ListVersionsByFunction
+                  - lambda:PublishVersion
+                  - lambda:RemovePermission
+                  - lambda:UpdateFunctionCode
+                  - lambda:UpdateFunctionConfiguration
+                  - s3:CreateBucket
+                  - s3:DeleteBucket
+                  - s3:GetObject
+                  - s3:PutBucketNotification
+                  - sns:CreateTopic
+                  - sns:DeleteTopic
+                  - sns:GetTopicAttributes
+                  - sns:Publish
+                  - sns:Subscribe
+                  - sns:Unsubscribe
+                Resource: '*'
   CodeStarForPipelineConnection:
     Type: AWS::CodeStarConnections::Connection
     Properties:
@@ -141,9 +205,6 @@ Resources:
           - Name: OutputBucket
             Type: PLAINTEXT
             Value: !Ref OutputBucket
-          - Name: CloudFormConfigurationFileName
-            Type: PLAINTEXT
-            Value: !Ref CloudFormConfigurationFileName
       ServiceRole:
         Fn::GetAtt:
           - CodeBuildServiceRole
@@ -198,11 +259,10 @@ Resources:
                 CombineArtifacts: false
               RunOrder: 1
               OutputArtifacts:
-                - Name: lambda1
-                - Name: lambda2
+                - Name: test
         - Name: Deploy
           Actions:
-            - Name: Deploy Lambda1
+            - Name: DeployTestMicroservice
               ActionTypeId:
                 Category: Deploy
                 Owner: AWS
@@ -212,6 +272,11 @@ Resources:
                 - Name: lambda1
               RunOrder: 1
               Configuration:
-                ActionMode: CHANGE_SET_REPLACE
+                ActionMode: CREATE_UPDATE
                 StackName: test-lambda
-                Capabilities: CAPABILITY_IAM
+                Capabilities: CAPABILITY_IAM,CAPABILITY_AUTO_EXPAND
+                TemplatePath: test::packaged-template.yml
+                RoleArn:
+                  Fn::GetAtt:
+                    - CloudformDeployServicePolicy
+                    - Arn

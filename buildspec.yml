@@ -9,13 +9,6 @@ batch:
       env:
         variables:
           service: test
-          function: lambda1
-      ignore-failure: false
-    - identifier: lambda2
-      env:
-        variables:
-          service: test
-          function: lambda2
       ignore-failure: false
 
 phases:
@@ -26,15 +19,13 @@ phases:
 
   build:
     commands:
-      - . ./generate-script.sh
-      - cd ./${service}/${function}
-      - npm install
-      - zip -r function_${function}.zip .
-      - aws s3 cp ./function_${function}.zip s3://${OutputBucket}/${CODEBUILD_RESOLVED_SOURCE_VERSION}/function_${service}_${function}.zip
+      - cd ./${service}
+      - sam build
+      - sam package --s3-bucket ${OutputBucket} --output-template-file packaged-template.yml
+
 artifacts:
   files:
-    - lambda-template.yml
-    - ${CloudFormConfigurationFileName}
-  name: build_${service}_${function}.zip
+    - packaged-template.yml
+  name: build_${service}.zip
   base-directory: ${service}
   
