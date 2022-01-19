@@ -200,4 +200,19 @@ Resources:
               OutputArtifacts:
                 - Name: lambda1
                 - Name: lambda2
+        - Name: Deploy
+          Actions:
+            - Name: Deploy Lambda1
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: "1"
+              InputArtifacts:
+                - Name: lambda1
+              RunOrder: 1
+              Configuration:
+                ActionMode: CHANGE_SET_REPLACE
+                StackName: test-lambda
+                Capabilities: CAPABILITY_IAM
                 
