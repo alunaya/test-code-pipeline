@@ -1,8 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'create code pipline with simple code build stage for pipeline testing of microservice'
-Parameters:
-  CloudFormConfigurationFileName:
-      Type: String
 Resources:
   SourceBucket:
     Type: 'AWS::S3::Bucket'
@@ -121,7 +118,7 @@ Resources:
   CloudformDeployServiceRole:
     Type: 'AWS::IAM::Role'
     Properties:
-      RoleName: CodePipelineTestServiceRole
+      RoleName: CloudformDeployServiceRole
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -269,7 +266,7 @@ Resources:
                 Provider: CloudFormation
                 Version: "1"
               InputArtifacts:
-                - Name: lambda1
+                - Name: test
               RunOrder: 1
               Configuration:
                 ActionMode: CREATE_UPDATE
@@ -278,5 +275,5 @@ Resources:
                 TemplatePath: test::packaged-template.yml
                 RoleArn:
                   Fn::GetAtt:
-                    - CloudformDeployServicePolicy
+                    - CloudformDeployServiceRole
                     - Arn

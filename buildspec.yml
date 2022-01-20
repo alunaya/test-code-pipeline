@@ -5,7 +5,7 @@ run-as: root
 batch:
   fast-fail: true
   build-list:
-    - identifier: lambda1
+    - identifier: test
       env:
         variables:
           service: test
