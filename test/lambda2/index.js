@@ -1,3 +1,5 @@
+let helloWorld = require("hello-world-npm")
+
 exports.handler =  async function(event, context) {
     console.log(helloWorld());
     console.log(helloWorld());

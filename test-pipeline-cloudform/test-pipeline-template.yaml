@@ -121,6 +121,7 @@ Resources:
                   - 'cloudformation:ExecuteChangeSet'
                   - 'cloudformation:SetStackPolicy'
                   - 'cloudformation:ValidateTemplate'
+                  - 'sns:Publish'
                   - 'iam:PassRole'
                 Resource: '*'
               - Effect: Allow
@@ -225,6 +226,12 @@ Resources:
           Fn::GetAtt:
             - CodeBuildServiceRole
             - Arn
+  CodePipelineNotification:
+    Type: AWS::SNS::Topic
+    Properties:
+      Subscription:
+        - Endpoint: lemtiz@heremail.club
+          Protocol: email
   CodePipelineService:
     Type: AWS::CodePipeline::Pipeline
     Properties: 
@@ -283,6 +290,51 @@ Resources:
               Configuration:
                 ActionMode: CREATE_UPDATE
                 StackName: test-lambda
+                Capabilities: CAPABILITY_IAM,CAPABILITY_AUTO_EXPAND
+                TemplatePath: test::packaged-template.yml
+                RoleArn:
+                  Fn::GetAtt:
+                    - CloudformDeployServiceRole
+                    - Arn
+            - Name: Approval
+              ActionTypeId:
+                Category: Approval
+                Owner: AWS
+                Provider: Manual
+                Version: "1"
+              RunOrder: 2
+              Configuration:
+                NotificationArn: !Ref CodePipelineNotification
+                CustomData: test approval test approval
+            - Name: DeleteTestMicroservice
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: "1"
+              InputArtifacts:
+                - Name: test
+              RunOrder: 3
+              Configuration:
+                ActionMode: DELETE_ONLY
+                StackName: test-lambda
+                Capabilities: CAPABILITY_IAM,CAPABILITY_AUTO_EXPAND
+                RoleArn:
+                  Fn::GetAtt:
+                    - CloudformDeployServiceRole
+                    - Arn
+            - Name: DeployProdMicroservice
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: "1"
+              InputArtifacts:
+                - Name: test
+              RunOrder: 3
+              Configuration:
+                ActionMode: CREATE_UPDATE
+                StackName: prod-lambda
                 Capabilities: CAPABILITY_IAM,CAPABILITY_AUTO_EXPAND
                 TemplatePath: test::packaged-template.yml
                 RoleArn:
