@@ -110,6 +110,18 @@ Resources:
                   - 'codebuild:StartBuild'
                   - 'codebuild:BatchGetBuildBatches'
                   - 'codebuild:StartBuildBatch'
+                  - 'cloudformation:DescribeStacks'
+                  - 'cloudformation:CreateStack'
+                  - 'cloudformation:DeleteStack'
+                  - 'cloudformation:DescribeStacks'
+                  - 'cloudformation:UpdateStack'
+                  - 'cloudformation:CreateChangeSet'
+                  - 'cloudformation:DeleteChangeSet'
+                  - 'cloudformation:DescribeChangeSet'
+                  - 'cloudformation:ExecuteChangeSet'
+                  - 'cloudformation:SetStackPolicy'
+                  - 'cloudformation:ValidateTemplate'
+                  - 'iam:PassRole'
                 Resource: '*'
               - Effect: Allow
                 Action:
@@ -236,7 +248,7 @@ Resources:
                 FullRepositoryId: 'alunaya/test-code-pipeline'
                 BranchName: 'sam'
                 OutputArtifactFormat: "CODE_ZIP"
-                DetectChanges: false
+                DetectChanges: true
               OutputArtifacts:
                 - Name: TestApp
               RunOrder: 1
